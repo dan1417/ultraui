@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultrade Multi-Wallet Dashboard</title>
+    <link rel="icon" type="image/png" href="/static/ultrade.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e4e4e7;
+            padding: 12px;
+            font-size: 13px;
+            min-height: 100vh;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+                font-size: 12px;
+            }
+        }
+
+        /* Removed global transition for better performance */
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: rgba(26, 31, 58, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            border: 1px solid rgba(96, 165, 250, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .header:hover {
+            border-color: rgba(96, 165, 250, 0.2);
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .header-logo {
+                width: 32px;
+                height: 32px;
+            }
+
+            .header-brand {
+                gap: 4px;
+            }
+
+            .header h1 {
+                font-size: 14px;
+            }
+
+            .block-info {
+                font-size: 11px;
+                padding: 3px 8px;
+            }
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-logo {
+            width: 26px;
+            height: 26px;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .block-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            padding: 4px 10px;
+            background: rgba(10, 14, 39, 0.4);
+            border-radius: 6px;
+            border: 1px solid rgba(96, 165, 250, 0.1);
+        }
+
+        .block-info span:last-child {
+            font-weight: 600;
+            color: #60a5fa;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1;
+                transform: scale(1);
+                box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+            }
+            50% { 
+                opacity: 0.7;
+                transform: scale(0.95);
+                box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+            }
+        }
+
+        .status-dot.disconnected {
+            background: #ef4444;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+            animation: none;
+        }
+
+        .api-key-section {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: rgba(26, 31, 58, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            border: 1px solid rgba(96, 165, 250, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .api-key-section:hover {
+            border-color: rgba(96, 165, 250, 0.2);
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        @media (max-width: 768px) {
+            .api-key-input {
+                flex-wrap: wrap;
+            }
+
+            .api-key-input label {
+                width: 100%;
+                margin-bottom: 4px;
+            }
+        }
+
+        .api-key-input {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        input[type="text"], input[type="password"], input[type="number"], select {
+            background: rgba(10, 14, 39, 0.8);
+            border: 1px solid rgba(42, 47, 74, 0.6);
+            color: #e4e4e7;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            flex: 1;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #60a5fa;
+            background: rgba(10, 14, 39, 1);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        input[type="text"]:hover, input[type="password"]:hover, input[type="number"]:hover, select:hover {
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+
+        input[type="text"]:disabled, input[type="password"]:disabled, input[type="number"]:disabled, select:disabled {
+            background: rgba(10, 14, 39, 0.4);
+            border-color: rgba(42, 47, 74, 0.3);
+            color: #6b7280;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            input[type="text"], input[type="password"], input[type="number"], select {
+                font-size: 11px;
+                padding: 5px 8px;
+            }
+        }
+
+        button {
+            background: rgba(59, 130, 246, 0.1);
+            backdrop-filter: blur(10px);
+            color: #60a5fa;
+            border: 1.5px solid rgba(59, 130, 246, 0.4);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        button:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.6);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        button:active {
+            transform: translateY(0);
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        button:disabled {
+            background: rgba(55, 65, 81, 0.1);
+            border-color: rgba(55, 65, 81, 0.3);
+            color: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.5;
+        }
+
+        button.secondary {
+            background: rgba(55, 65, 81, 0.1);
+            border-color: rgba(107, 114, 128, 0.4);
+            color: #9ca3af;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button.secondary:hover {
+            background: rgba(75, 85, 99, 0.2);
+            border-color: rgba(107, 114, 128, 0.6);
+            color: #d1d5db;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+        }
+
+        button.danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.6);
+            color: #fca5a5;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            button {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+        }
+
+        .wallets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 12px;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 768px) {
+            .wallets-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .wallet-card {
+                padding: 8px;
+            }
+        }
+
+        .wallet-card {
+            background: rgba(26, 31, 58, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(96, 165, 250, 0.1);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.4s ease-out;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 320px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .wallet-card:hover {
+            border-color: rgba(96, 165, 250, 0.2);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 768px) {
+            .wallet-card {
+                min-width: 100%;
+            }
+        }
+
+        .wallet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+        }
+
+        .wallet-header-left {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .wallet-name {
+            font-size: 14px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.02em;
+        }
+
+        .wallet-delegator {
+            font-size: 11px;
+            color: #9ca3af;
+            font-family: monospace;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .wallet-delegator:hover {
+            color: #60a5fa;
+        }
+
+        .wallet-balances {
+            font-size: 13px;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .wallet-balances .free-balance {
+            color: #22c55e;
+            text-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+        }
+
+        .wallet-balances .separator {
+            color: #6b7280;
+            margin: 0 4px;
+        }
+
+        .wallet-balances .total-balance {
+            color: #60a5fa;
+            text-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
+        }
+
+        .control-addresses {
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+        }
+
+        .control-address-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .control-address-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-address-row label {
+            min-width: 48px;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        .control-address-link {
+            flex: 1;
+            font-family: monospace;
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .control-address-link:hover {
+            text-decoration: underline;
+        }
+
+        .control-balance {
+            font-family: monospace;
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        .control-pulse {
+            margin-top: 8px;
+        }
+
+        .pulse-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #9ca3af;
+        }
+
+        .pulse-status-badge.running {
+            color: #22c55e;
+        }
+
+        .pulse-status-badge.stopped {
+            color: #f87171;
+        }
+
+        .pulse-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .pulse-status-badge.running .pulse-status-dot {
+            background: #22c55e;
+            box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        .pulse-status-badge.stopped .pulse-status-dot {
+            background: #ef4444;
+            box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .wallet-header {
+                flex-direction: row;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .wallet-balances {
+                font-size: 12px;
+                align-self: flex-end;
+            }
+
+            .wallet-delegator {
+                font-size: 10px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                max-width: 100%;
+            }
+        }
+
+        .stakes-list {
+            margin-bottom: 8px;
+            /* max-height: 200px; */
+            /* overflow-y: auto; */
+            overflow-x: auto;
+            border-radius: 8px;
+            background: rgba(10, 14, 39, 0.3);
+        }
+
+        .stakes-table {
+            width: 100%;
+            min-width: 500px;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .stakes-table thead {
+            position: sticky;
+            top: 0;
+            background: rgba(26, 31, 58, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1;
+        }
+
+        .stakes-table th {
+            text-align: left;
+            padding: 8px;
+            color: #9ca3af;
+            font-weight: 600;
+            font-size: 11px;
+            border-bottom: 2px solid rgba(96, 165, 250, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stakes-table td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(42, 47, 74, 0.3);
+        }
+
+        .stakes-table tbody tr {
+            background: rgba(10, 14, 39, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stakes-table tbody tr:hover {
+            background: rgba(96, 165, 250, 0.08);
+        }
+
+        @media (max-width: 768px) {
+            .stakes-table {
+                font-size: 11px;
+                min-width: 450px;
+            }
+
+            .stakes-table th,
+            .stakes-table td {
+                padding: 6px;
+            }
+
+            .stakes-table th {
+                font-size: 10px;
+            }
+        }
+
+        .stake-netuid {
+            font-weight: 700;
+        }
+        
+        .stake-netuid a {
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+        
+        .stake-netuid a:hover {
+            opacity: 0.8;
+        }
+        
+        .stake-netuid > div > a > span {
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stake-price {
+            color: #9ca3af;
+        }
+
+        .stake-hotkey {
+            color: #9ca3af;
+        }
+
+        .stake-hotkey a:hover {
+            color: #60a5fa;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .stake-tao {
+            color: #e4e4e7;
+        }
+
+        .stake-alpha {
+            color: #9ca3af;
+        }
+
+        .stake-delta {
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 5px;
+            font-weight: 600;
+            margin-left: 6px;
+            display: inline-block;
+            animation: scaleIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .stake-delta.positive {
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.15);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+        }
+
+        .stake-delta.negative {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.15);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+        }
+
+        .dump-btn {
+            padding: 4px 10px;
+            font-size: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            backdrop-filter: blur(10px);
+            color: #f87171;
+            border: 1.5px solid rgba(239, 68, 68, 0.4);
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dump-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.6);
+            color: #fca5a5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .dump-btn:active {
+            transform: translateY(0);
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .dump-btn:disabled {
+            background: rgba(55, 65, 81, 0.1);
+            border-color: rgba(55, 65, 81, 0.3);
+            color: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .dump-btn {
+                font-size: 9px;
+                padding: 3px 8px;
+            }
+        }
+
+        .operations-section {
+            border-top: 1px solid rgba(96, 165, 250, 0.1);
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .operations-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+            background: rgba(10, 14, 39, 0.4);
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 6px;
+            font-size: 11px;
+            background: transparent;
+            border: 1.5px solid transparent;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #9ca3af;
+        }
+
+        .tab-btn:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: rgba(96, 165, 250, 0.2);
+            transform: none;
+            box-shadow: none;
+            color: #60a5fa;
+        }
+
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.15);
+            backdrop-filter: blur(10px);
+            border-color: rgba(59, 130, 246, 0.5);
+            color: #60a5fa;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2), inset 0 0 12px rgba(59, 130, 246, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .operations-tabs {
+                gap: 3px;
+            }
+
+            .tab-btn {
+                font-size: 10px;
+                padding: 5px;
+            }
+        }
+
+        .operation-form {
+            display: none;
+        }
+
+        .operation-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 8px;
+            min-width: 1px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 11px;
+            color: #9ca3af;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        .form-group input {
+            width: -webkit-fill-available
+        }
+
+        .form-row {
+            display: flex;
+            gap: 6px;
+        }
+/* 
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+        } */
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #3b82f6;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-group:hover label {
+            color: #60a5fa;
+        }
+
+        @media (max-width: 768px) {
+            .checkbox-group {
+                font-size: 11px;
+            }
+
+            .checkbox-group input[type="checkbox"] {
+                width: 14px;
+                height: 14px;
+            }
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: calc(100vw - 72px);
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .toast-container {
+                top: 8px;
+                right: 8px;
+            }
+
+            .toast {
+                min-width: unset;
+                width: 100%;
+            }
+        }
+
+        .toast {
+            background: rgba(26, 31, 58, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            padding: 12px 16px;
+            border-radius: 10px;
+            min-width: 300px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(120%) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            border-left: 4px solid #22c55e;
+            box-shadow: 0 8px 16px rgba(34, 197, 94, 0.2), 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast.error {
+            border-left: 4px solid #ef4444;
+            box-shadow: 0 8px 16px rgba(239, 68, 68, 0.2), 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast.info {
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2), 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 12px;
+            letter-spacing: 0.02em;
+        }
+
+        .toast-message {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 14, 39, 0.2);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(96, 165, 250, 0.1);
+            border-top: 4px solid #60a5fa;
+            border-right: 4px solid #a78bfa;
+            border-radius: 50%;
+            animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .spinner {
+                width: 40px;
+                height: 40px;
+                border-width: 3px;
+            }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #9ca3af;
+            font-size: 12px;
+            background: rgba(10, 14, 39, 0.4);
+            border-radius: 8px;
+            border: 1px dashed rgba(96, 165, 250, 0.2);
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 14, 39, 0.4);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3b82f6 0%, #a78bfa 100%);
+            border-radius: 4px;
+            box-shadow: 0 0 6px rgba(96, 165, 250, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
+        }
+
+        /* Scrollbar for Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #3b82f6 rgba(10, 14, 39, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            /* Thinner scrollbars on mobile */
+            ::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+
+            * {
+                scrollbar-width: thin;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-brand">
+                <img src="/static/ultrade.png" alt="Ultrade Logo" class="header-logo">
+                <h1 style="margin-top: 2px;">Ultrade</h1>
+            </div>
+            <div class="block-info">
+                <span class="status-dot" id="statusDot"></span>
+                <span>Block: <span id="blockNumber">-</span></span>
+            </div>
+        </div>
+
+        <div class="api-key-section">
+            <div class="api-key-input">
+                <label style="min-width: 60px;">API Key:</label>
+                <input type="password" id="apiKeyInput" placeholder="Enter your API key">
+                <button onclick="saveApiKey()">Save</button>
+                <button class="secondary" onclick="toggleApiKeyVisibility()">Show</button>
+            </div>
+        </div>
+
+        <div class="wallets-grid" id="walletsGrid">
+            <div class="no-data">Connecting to server...</div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        let previousData = {};
+        const pulseRunningWallets = {};
+        const boltOppConnections = {};
+        const stakeRequestPending = {};
+        let apiKey = localStorage.getItem('ultrade_api_key') || '';
+        
+        // Load API key on page load
+        if (apiKey) {
+            document.getElementById('apiKeyInput').value = apiKey;
+        }
+
+        function saveApiKey() {
+            const input = document.getElementById('apiKeyInput');
+            apiKey = input.value.trim();
+            localStorage.setItem('ultrade_api_key', apiKey);
+            showToast('Success', 'API key saved to browser', 'success');
+        }
+
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('apiKeyInput');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.hostname}:8727/ws`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                document.getElementById('statusDot').classList.remove('disconnected');
+                showToast('Connected', 'Real-time updates active', 'success');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'pong') return;
+                if (data.type?.endsWith('_response')) {
+                    const reqId = data.request_id;
+                    const pending = stakeRequestPending[reqId];
+                    if (pending) {
+                        delete stakeRequestPending[reqId];
+                        if (data.success) pending.resolve(data);
+                        else pending.reject(new Error(data.detail || 'Request failed'));
+                    }
+                    return;
+                }
+                updateDashboard(data);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                document.getElementById('statusDot').classList.add('disconnected');
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                document.getElementById('statusDot').classList.add('disconnected');
+                showToast('Disconnected', 'Reconnecting in 5s...', 'error');
+                setTimeout(connectWebSocket, 5000);
+            };
+        }
+
+        function updateDashboard(data) {
+            if (!data.wallets) return;
+            
+            const blockNumber = Object.values(data.wallets)[0]?.block_number || '-';
+            document.getElementById('blockNumber').textContent = blockNumber;
+            
+            const walletsGrid = document.getElementById('walletsGrid');
+            
+            // If first load (no wallet cards yet), create all wallet cards
+            if (walletsGrid.children.length === 0 || !walletsGrid.querySelector('.wallet-card')) {
+                walletsGrid.innerHTML = '';
+                Object.entries(data.wallets).forEach(([walletName, walletData]) => {
+                    const walletCard = createWalletCard(walletName, walletData);
+                    walletsGrid.appendChild(walletCard);
+                    if (walletData.type === 'contract') {
+                        updateBoltOppConnectionStatus(walletName);
+                        if (getBoltWebSocketUrl(walletName)) connectBoltOpp(walletName);
+                    }
+                });
+            } else {
+                // Update only the data portions, leave forms intact
+                Object.entries(data.wallets).forEach(([walletName, walletData]) => {
+                    updateWalletData(walletName, walletData);
+                });
+            }
+            
+            previousData = data;
+        }
+
+        function updateWalletData(walletName, walletData) {
+            const walletCard = Array.from(document.querySelectorAll('.wallet-card')).find(
+                card => card.querySelector('.wallet-name').textContent.toLowerCase() === walletName
+            );
+            
+            if (!walletCard) return;
+            
+            const previousWalletData = previousData.wallets?.[walletName];
+            const isContract = walletData.type === 'contract';
+            
+            // Update balances in header
+            const freeBalanceEl = walletCard.querySelector('.free-balance');
+            const totalBalanceEl = walletCard.querySelector('.total-balance');
+            if (freeBalanceEl && totalBalanceEl) {
+                freeBalanceEl.textContent = walletData.free.toFixed(2);
+                totalBalanceEl.textContent = walletData.total.toFixed(2);
+            }
+            
+            // Update owner/assist balances for contract wallets
+            if (isContract) {
+                const ownerFreeEl = walletCard.querySelector('.owner-free-balance');
+                const assistFreeEl = walletCard.querySelector('.assist-free-balance');
+                if (ownerFreeEl) ownerFreeEl.textContent = (walletData.owner_free ?? 0).toFixed(2);
+                if (assistFreeEl) assistFreeEl.textContent = (walletData.assist_free ?? 0).toFixed(2);
+                // Refetch pulse status on block update
+                fetchPulseStatus(walletName);
+            }
+            
+            // Update stakes list
+            const stakesList = walletCard.querySelector('.stakes-list');
+            const stakes = (walletData.stakes || []).filter(stake => stake.balance_in_alpha >= 0.001);
+
+            let stakesHTML = '';
+            if (stakes.length > 0) {
+                const rows = stakes.map(stake => {
+                    const delta = calculateDelta(stake, previousWalletData, stake.netuid, stake.hotkey);
+                    const threshold = 0.005;
+                    const deltaHTML = Math.abs(delta) > threshold ? `<span class="stake-delta ${delta > 0 ? 'positive' : 'negative'}">${delta > 0 ? '+' : ''}${delta.toFixed(2)}</span>` : '';
+                    const dumpBtn = isContract
+                        ? `<button class="dump-btn" onclick="boltDump('${walletName}', ${stake.netuid})">Dump</button>`
+                        : `<button class="dump-btn" onclick="dumpStake('${walletName}', ${stake.netuid}, '${stake.hotkey}')">Dump</button>`;
+                    return `
+                        <tr>
+                            <td class="stake-netuid">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <a href="https://67.213.113.23/subnet/${stake.netuid}" target="_blank" rel="noopener noreferrer"><span>SN ${stake.netuid}</span></a>
+                                    ${dumpBtn}
+                                </div>
+                            </td>
+                            <td class="stake-price">${stake.price.toFixed(5)}</td>
+                            <td class="stake-hotkey">
+                                <a onclick="copyToClipboard('${stake.hotkey}')">
+                                    ${stake.hotkey.substring(0, 6)}...
+                                </a>
+                            </td>
+                            <td class="stake-tao">${stake.balance_in_tao.toFixed(2)} τ${deltaHTML}</td>
+                            <td class="stake-alpha">${stake.balance_in_alpha.toFixed(2)} α</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                stakesHTML = `
+                    <table class="stakes-table">
+                        <thead>
+                            <tr>
+                                <th>Subnet</th>
+                                <th>Price</th>
+                                <th>Hotkey</th>
+                                <th>TAO</th>
+                                <th>Alpha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                stakesHTML = '<div class="no-data">No stakes</div>';
+            }
+            
+            stakesList.innerHTML = stakesHTML;
+        }
+
+        function createWalletCard(walletName, walletData) {
+            const card = document.createElement('div');
+            card.className = 'wallet-card';
+            const isContract = walletData.type === 'contract';
+            
+            if (isContract) {
+                return createContractWalletCard(walletName, walletData);
+            }
+            
+            const stakes = (walletData.stakes || []).filter(stake => stake.balance_in_alpha >= 0.001);
+            const previousWalletData = previousData.wallets?.[walletName];
+            
+            let stakesHTML = '';
+            if (stakes.length > 0) {
+                const rows = stakes.map(stake => {
+                    const delta = calculateDelta(stake, previousWalletData, stake.netuid);
+                    const threshold = 0.005;
+                    const deltaHTML = Math.abs(delta) > threshold ? `<span class="stake-delta ${delta > 0 ? 'positive' : 'negative'}">${delta > 0 ? '+' : ''}${delta.toFixed(2)}</span>` : '';
+                    
+                    return `
+                        <tr>
+                            <td class="stake-netuid">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <a href="https://67.213.113.23/subnet/${stake.netuid}" target="_blank" rel="noopener noreferrer"><span>SN ${stake.netuid}</span></a>
+                                    <button class="dump-btn" onclick="dumpStake('${walletName}', ${stake.netuid}, '${stake.hotkey}')">Dump</button>
+                                </div>
+                            </td>
+                            <td class="stake-price">${stake.price.toFixed(5)}</td>
+                            <td class="stake-hotkey">
+                                <a onclick="copyToClipboard('${stake.hotkey}')">
+                                    ${stake.hotkey.substring(0, 6)}...
+                                </a>
+                            </td>
+                            <td class="stake-tao">${stake.balance_in_tao.toFixed(2)} τ${deltaHTML}</td>
+                            <td class="stake-alpha">${stake.balance_in_alpha.toFixed(2)} α</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                stakesHTML = `
+                    <table class="stakes-table">
+                        <thead>
+                            <tr>
+                                <th>Subnet</th>
+                                <th>Price</th>
+                                <th>Hotkey</th>
+                                <th>TAO</th>
+                                <th>Alpha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                stakesHTML = '<div class="no-data">No stakes</div>';
+            }
+            
+            const delegatorAddr = walletData.delegator || 'Unknown';
+            const delegatorDisplay = delegatorAddr.length > 20 ? `${delegatorAddr.substring(0, 10)}...${delegatorAddr.substring(delegatorAddr.length - 10)}` : delegatorAddr;
+            card.innerHTML = `
+                <div class="wallet-header">
+                    <div class="wallet-header-left">
+                        <div class="wallet-name">${walletName.toUpperCase()}</div>
+                        <a href="https://67.213.113.23/account/${delegatorAddr}" target="_blank" rel="noopener noreferrer" class="wallet-delegator" title="${delegatorAddr}">${delegatorDisplay}</a>
+                    </div>
+                    <div class="wallet-balances">
+                        <span class="free-balance">${walletData.free.toFixed(2)}</span><span class="separator">/</span><span class="total-balance">${walletData.total.toFixed(2)}</span>
+                    </div>
+                </div>
+                
+                <div class="stakes-list">
+                    ${stakesHTML}
+                </div>
+                
+                <div class="operations-section">
+                    <div class="operations-tabs">
+                        <button class="tab-btn active" onclick="switchTab('${walletName}', 'add')">Add</button>
+                        <button class="tab-btn" onclick="switchTab('${walletName}', 'remove')">Remove</button>
+                        <button class="tab-btn" onclick="switchTab('${walletName}', 'move')">Swap</button>
+                        <button class="tab-btn" onclick="switchTab('${walletName}', 'change')">Move</button>
+                    </div>
+                    
+                    <div class="operation-form active" id="${walletName}-add">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Netuid</label>
+                                <input type="number" id="${walletName}-add-netuid" placeholder="1">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Amount (TAO)</label>
+                                <input type="number" step="0.01" id="${walletName}-add-amount" placeholder="10.0">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Tolerance</label>
+                                <input type="number" disabled step="0.0001" id="${walletName}-add-tolerance" value="0.005">
+                            </div>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" checked id="${walletName}-add-allow-partial">
+                            <label for="${walletName}-add-allow-partial">Allow partial</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${walletName}-add-mev">
+                            <label for="${walletName}-add-mev">MEV Shield</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${walletName}-add-fail">
+                            <label for="${walletName}-add-fail">Fail</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${walletName}-add-without-tolerance">
+                            <label for="${walletName}-add-without-tolerance">W/O tolerance</label>
+                        </div>
+                        <button onclick="addStake('${walletName}')">Add Stake</button>
+                    </div>
+                    
+                    <div class="operation-form" id="${walletName}-remove">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Netuid</label>
+                                <input type="number" id="${walletName}-remove-netuid" placeholder="1">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Hotkey</label>
+                                <input type="text" id="${walletName}-remove-hotkey" placeholder="hotkey_ss58">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Amount (Alpha)</label>
+                                <input type="number" step="0.01" id="${walletName}-remove-amount" placeholder="10.0">
+                            </div>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${walletName}-remove-all">
+                            <label for="${walletName}-remove-all">Remove All</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${walletName}-remove-mev">
+                            <label for="${walletName}-remove-mev">MEV Shield</label>
+                        </div>
+                        <button class="danger" onclick="removeStake('${walletName}')">Remove Stake</button>
+                    </div>
+                    
+                    <div class="operation-form" id="${walletName}-move">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>From Netuid</label>
+                                <input type="number" id="${walletName}-move-origin" placeholder="1">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Hotkey</label>
+                                <input type="text" id="${walletName}-move-hotkey" placeholder="hotkey_ss58">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>To Netuid</label>
+                                <input type="number" id="${walletName}-move-dest" placeholder="2">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Amount (Alpha)</label>
+                                <input type="number" step="0.01" id="${walletName}-move-amount" placeholder="10.0">
+                            </div>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${walletName}-move-all">
+                            <label for="${walletName}-move-all">Swap All</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${walletName}-move-mev">
+                            <label for="${walletName}-move-mev">MEV Shield</label>
+                        </div>
+                        <button onclick="moveStake('${walletName}')">Swap Stake</button>
+                    </div>
+
+                    <div class="operation-form" id="${walletName}-change">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Netuid</label>
+                                <input type="number" id="${walletName}-change-netuid" placeholder="1">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>From Hotkey</label>
+                                <input type="text" id="${walletName}-change-origin-hotkey" placeholder="origin_hotkey">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>To Hotkey</label>
+                                <input type="text" id="${walletName}-change-dest-hotkey" placeholder="dest_hotkey">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Amount (Alpha)</label>
+                                <input type="number" step="0.01" id="${walletName}-change-amount" placeholder="10.0">
+                            </div>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${walletName}-change-all">
+                            <label for="${walletName}-change-all">Move All</label>
+                        </div>
+                        <button onclick="changeHotkey('${walletName}')">Move Stake</button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function createContractWalletCard(walletName, walletData) {
+            const card = document.createElement('div');
+            card.className = 'wallet-card';
+            const stakes = (walletData.stakes || []).filter(stake => stake.balance_in_alpha >= 0.001);
+            const previousWalletData = previousData.wallets?.[walletName];
+            const mainAddr = walletData.delegator || 'Unknown';
+            const mainDisplay = mainAddr.length > 20 ? `${mainAddr.substring(0, 10)}...${mainAddr.substring(mainAddr.length - 10)}` : mainAddr;
+            const ownerFree = (walletData.owner_free ?? 0).toFixed(2);
+            const assistFree = (walletData.assist_free ?? 0).toFixed(2);
+            
+            const baseUrl = localStorage.getItem(`ultrade_${walletName}_base_boltrade_url`) || '';
+            const xApiKey = localStorage.getItem(`ultrade_${walletName}_x_api_key`) || '';
+            
+            let stakesHTML = '';
+            if (stakes.length > 0) {
+                const rows = stakes.map(stake => {
+                    const delta = calculateDelta(stake, previousWalletData, stake.netuid, stake.hotkey);
+                    const threshold = 0.005;
+                    const deltaHTML = Math.abs(delta) > threshold ? `<span class="stake-delta ${delta > 0 ? 'positive' : 'negative'}">${delta > 0 ? '+' : ''}${delta.toFixed(2)}</span>` : '';
+                    return `
+                        <tr>
+                            <td class="stake-netuid">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <a href="https://67.213.113.23/subnet/${stake.netuid}" target="_blank" rel="noopener noreferrer"><span>SN ${stake.netuid}</span></a>
+                                    <button class="dump-btn" onclick="boltDump('${walletName}', ${stake.netuid})">Dump</button>
+                                </div>
+                            </td>
+                            <td class="stake-price">${stake.price.toFixed(5)}</td>
+                            <td class="stake-hotkey">
+                                <a onclick="copyToClipboard('${stake.hotkey}')">${stake.hotkey.substring(0, 6)}...</a>
+                            </td>
+                            <td class="stake-tao">${stake.balance_in_tao.toFixed(2)} τ${deltaHTML}</td>
+                            <td class="stake-alpha">${stake.balance_in_alpha.toFixed(2)} α</td>
+                        </tr>
+                    `;
+                }).join('');
+                stakesHTML = `
+                    <table class="stakes-table">
+                        <thead><tr><th>Subnet</th><th>Price</th><th>Hotkey</th><th>TAO</th><th>Alpha</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } else {
+                stakesHTML = '<div class="no-data">No stakes</div>';
+            }
+            
+            card.innerHTML = `
+                <div class="wallet-header">
+                    <div class="wallet-header-left">
+                        <div class="wallet-name">${walletName.toUpperCase()}</div>
+                        <a href="https://67.213.113.23/account/${mainAddr}" target="_blank" rel="noopener noreferrer" class="wallet-delegator" title="${mainAddr}">${mainDisplay}</a>
+                    </div>
+                    <div class="wallet-balances">
+                        <span class="free-balance">${walletData.free.toFixed(2)}</span><span class="separator">/</span><span class="total-balance">${walletData.total.toFixed(2)}</span>
+                    </div>
+                </div>
+                <div class="stakes-list">${stakesHTML}</div>
+                <div class="operations-section">
+                    <div class="operations-tabs">
+                        <button class="tab-btn active" onclick="switchTabContract('${walletName}', 'control')">Control</button>
+                        <button class="tab-btn" onclick="switchTabContract('${walletName}', 'stake')">Stake</button>
+                        <button class="tab-btn" onclick="switchTabContract('${walletName}', 'settings')">Settings</button>
+                    </div>
+                    <div class="operation-form active" id="${walletName}-control">
+                        <div class="control-addresses">
+                            <div class="control-address-row">
+                                <label>Owner</label>
+                                <a href="https://67.213.113.23/account/${walletData.owner_address || ''}" target="_blank" rel="noopener noreferrer" class="control-address-link" title="${walletData.owner_address || ''}">${(walletData.owner_address || '').length > 20 ? (walletData.owner_address || '').substring(0, 10) + '...' + (walletData.owner_address || '').substring((walletData.owner_address || '').length - 10) : (walletData.owner_address || '')}</a>
+                                <span class="control-balance owner-free-balance">${ownerFree}</span> τ
+                            </div>
+                            <div class="control-address-row">
+                                <label>Assist</label>
+                                <a href="https://67.213.113.23/account/${walletData.assist_address || ''}" target="_blank" rel="noopener noreferrer" class="control-address-link" title="${walletData.assist_address || ''}">${(walletData.assist_address || '').length > 20 ? (walletData.assist_address || '').substring(0, 10) + '...' + (walletData.assist_address || '').substring((walletData.assist_address || '').length - 10) : (walletData.assist_address || '')}</a>
+                                <span class="control-balance assist-free-balance">${assistFree}</span> τ
+                            </div>
+                        </div>
+                        <div class="control-pulse">
+                            <div class="form-group">
+                                <label>WebSocket</label>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="pulse-status pulse-status-badge" id="${walletName}-bolt-ws-status">
+                                        <span class="pulse-status-dot"></span>
+                                        <span class="pulse-status-text">Checking...</span>
+                                    </div>
+                                    <button class="secondary" id="${walletName}-bolt-ws-reconnect" onclick="reconnectBoltOpp('${walletName}')" style="display:none">Reconnect</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Pulse Status</label>
+                                <div class="pulse-status pulse-status-badge" id="${walletName}-pulse-status">
+                                    <span class="pulse-status-dot"></span>
+                                    <span class="pulse-status-text">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <button id="${walletName}-start-pulse" onclick="startPulse('${walletName}')" style="display:none">Start Pulse</button>
+                                <button id="${walletName}-stop-pulse" class="danger" onclick="stopPulse('${walletName}')" style="display:none">Stop Pulse</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="operation-form" id="${walletName}-stake">
+                        <div class="form-row">
+                            <div class="form-group" style="flex:1"><label>Netuid</label><input type="number" id="${walletName}-stake-netuid" placeholder="1"></div>
+                            <div class="form-group" style="flex:1"><label>Amount (TAO)</label><input type="number" step="0.01" id="${walletName}-stake-amount" placeholder="10.0"></div>
+                            <div class="form-group" style="flex:1"><label>Tolerance</label><input type="number" disabled step="0.0001" id="${walletName}-stake-tolerance" value="0.005"></div>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${walletName}-stake-mev">
+                            <label for="${walletName}-stake-mev">MEV Shield</label>
+                        </div>
+                        <button onclick="boltStake('${walletName}')">Stake</button>
+                    </div>
+                    <div class="operation-form" id="${walletName}-settings">
+                        <div class="form-row">
+                            <div class="form-group" style="flex:1"><label>Base Boltrade URL</label><input type="text" id="${walletName}-settings-base-url" value="${baseUrl}" placeholder="https://..."></div>
+                            <div class="form-group" style="flex:1"><label>X-API-Key</label><input type="password" id="${walletName}-settings-x-api-key" value="${xApiKey}" placeholder="API key"></div>
+                        </div>
+                        <button onclick="saveBoltSettings('${walletName}')">Save</button>
+                    </div>
+                </div>
+            `;
+            
+            // Initial pulse fetch and connection status
+            setTimeout(() => {
+                fetchPulseStatus(walletName);
+                updateBoltOppConnectionStatus(walletName);
+            }, 100);
+            return card;
+        }
+
+        function switchTabContract(walletName, tab) {
+            const tabs = ['control', 'stake', 'settings'];
+            tabs.forEach((t, i) => {
+                const form = document.getElementById(`${walletName}-${t}`);
+                const btn = event.target.parentElement.querySelectorAll('.tab-btn')[i];
+                if (form && btn) {
+                    if (t === tab) {
+                        form.classList.add('active');
+                        btn.classList.add('active');
+                    } else {
+                        form.classList.remove('active');
+                        btn.classList.remove('active');
+                    }
+                }
+            });
+            if (tab === 'settings') {
+                const baseUrl = localStorage.getItem(`ultrade_${walletName}_base_boltrade_url`) || '';
+                const xApiKey = localStorage.getItem(`ultrade_${walletName}_x_api_key`) || '';
+                const baseUrlInput = document.getElementById(`${walletName}-settings-base-url`);
+                const xApiKeyInput = document.getElementById(`${walletName}-settings-x-api-key`);
+                if (baseUrlInput) baseUrlInput.value = baseUrl;
+                if (xApiKeyInput) xApiKeyInput.value = xApiKey;
+            }
+        }
+
+        async function fetchPulseStatus(walletName) {
+            const baseUrl = localStorage.getItem(`ultrade_${walletName}_base_boltrade_url`);
+            if (!baseUrl) {
+                const el = document.getElementById(`${walletName}-pulse-status`);
+                if (el) {
+                    el.className = 'pulse-status pulse-status-badge';
+                    const textEl = el.querySelector('.pulse-status-text');
+                    if (textEl) textEl.textContent = 'Configure base URL in Settings';
+                }
+                return;
+            }
+            try {
+                const res = await fetch(`${baseUrl.replace(/\/$/, '')}/pulse`);
+                const data = await res.json();
+                const running = data.running === true;
+                const statusEl = document.getElementById(`${walletName}-pulse-status`);
+                const startBtn = document.getElementById(`${walletName}-start-pulse`);
+                const stopBtn = document.getElementById(`${walletName}-stop-pulse`);
+                if (statusEl) {
+                    statusEl.className = 'pulse-status pulse-status-badge ' + (running ? 'running' : 'stopped');
+                    const textEl = statusEl.querySelector('.pulse-status-text');
+                    if (textEl) textEl.textContent = running ? 'Running' : 'Stopped';
+                }
+                pulseRunningWallets[walletName] = running;
+                if (startBtn) { startBtn.style.display = running ? 'none' : 'inline-block'; }
+                if (stopBtn) { stopBtn.style.display = running ? 'inline-block' : 'none'; }
+            } catch (e) {
+                const el = document.getElementById(`${walletName}-pulse-status`);
+                if (el) {
+                    el.className = 'pulse-status pulse-status-badge';
+                    const textEl = el.querySelector('.pulse-status-text');
+                    if (textEl) textEl.textContent = 'Error fetching status';
+                }
+            }
+        }
+
+        async function startPulse(walletName) {
+            await setPulse(walletName, true);
+        }
+
+        async function stopPulse(walletName) {
+            await setPulse(walletName, false);
+        }
+
+        async function setPulse(walletName, running) {
+            const baseUrl = localStorage.getItem(`ultrade_${walletName}_base_boltrade_url`);
+            const xApiKey = localStorage.getItem(`ultrade_${walletName}_x_api_key`);
+            if (!baseUrl) { showToast('Error', 'Configure base URL in Settings', 'error'); return; }
+            const headers = { 'Content-Type': 'application/json' };
+            if (xApiKey) headers['x-api-key'] = xApiKey;
+            try {
+                showLoading();
+                const res = await fetch(`${baseUrl.replace(/\/$/, '')}/pulse`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ running })
+                });
+                if (res.ok) {
+                    showToast('Success', `Pulse ${running ? 'started' : 'stopped'}`, 'success');
+                    fetchPulseStatus(walletName);
+                } else {
+                    const err = await res.text();
+                    showToast('Error', err || 'Failed', 'error');
+                }
+            } catch (e) {
+                showToast('Error', e.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function getBoltWebSocketUrl(walletName) {
+            const baseUrl = localStorage.getItem(`ultrade_${walletName}_base_boltrade_url`);
+            const xApiKey = localStorage.getItem(`ultrade_${walletName}_x_api_key`);
+            if (!baseUrl) return null;
+            const wsBase = baseUrl.replace(/\/$/, '').replace(/^http/, 'ws').replace(/^https/, 'wss');
+            const apiKeyParam = xApiKey ? `?api_key=${encodeURIComponent(xApiKey)}` : '';
+            return `${wsBase}/ws/opp${apiKeyParam}`;
+        }
+
+        function updateBoltOppConnectionStatus(walletName) {
+            const el = document.getElementById(`${walletName}-bolt-ws-status`);
+            const reconnectBtn = document.getElementById(`${walletName}-bolt-ws-reconnect`);
+            if (!el) return;
+            const textEl = el.querySelector('.pulse-status-text');
+            if (!textEl) return;
+            if (!getBoltWebSocketUrl(walletName)) {
+                el.className = 'pulse-status pulse-status-badge';
+                textEl.textContent = 'Not configured';
+                if (reconnectBtn) reconnectBtn.style.display = 'none';
+                return;
+            }
+            const conn = boltOppConnections[walletName];
+            const state = conn?.ws?.readyState;
+            if (state === WebSocket.OPEN) {
+                el.className = 'pulse-status pulse-status-badge running';
+                textEl.textContent = 'Connected';
+                if (reconnectBtn) reconnectBtn.style.display = 'none';
+            } else if (state === WebSocket.CONNECTING) {
+                el.className = 'pulse-status pulse-status-badge';
+                textEl.textContent = 'Connecting...';
+                if (reconnectBtn) reconnectBtn.style.display = 'none';
+            } else {
+                el.className = 'pulse-status pulse-status-badge stopped';
+                textEl.textContent = 'Disconnected';
+                if (reconnectBtn) reconnectBtn.style.display = 'inline-block';
+            }
+        }
+
+        function reconnectBoltOpp(walletName) {
+            if (!getBoltWebSocketUrl(walletName)) return;
+            disconnectBoltOpp(walletName);
+            connectBoltOpp(walletName);
+        }
+
+        function disconnectBoltOpp(walletName) {
+            const conn = boltOppConnections[walletName];
+            if (conn) {
+                if (conn.timeout) clearTimeout(conn.timeout);
+                if (conn.ws) conn.ws.close();
+                delete boltOppConnections[walletName];
+            }
+            updateBoltOppConnectionStatus(walletName);
+        }
+
+        function connectBoltOpp(walletName) {
+            const wsUrl = getBoltWebSocketUrl(walletName);
+            if (!wsUrl) return;
+            if (boltOppConnections[walletName]?.ws?.readyState === WebSocket.OPEN) return;
+
+            disconnectBoltOpp(walletName);
+            const ws = new WebSocket(wsUrl);
+            const conn = { ws, pendingResolve: null, pendingReject: null, timeout: null };
+            boltOppConnections[walletName] = conn;
+            updateBoltOppConnectionStatus(walletName);
+
+            ws.onopen = () => updateBoltOppConnectionStatus(walletName);
+            ws.onmessage = (event) => {
+                if (conn.pendingResolve) {
+                    if (conn.timeout) clearTimeout(conn.timeout);
+                    try {
+                        conn.pendingResolve(JSON.parse(event.data));
+                    } catch (e) {
+                        conn.pendingReject(e);
+                    }
+                    conn.pendingResolve = null;
+                    conn.pendingReject = null;
+                }
+            };
+            ws.onerror = () => {
+                updateBoltOppConnectionStatus(walletName);
+                if (conn.pendingReject) {
+                    conn.pendingReject(new Error('WebSocket error'));
+                    conn.pendingResolve = null;
+                    conn.pendingReject = null;
+                }
+            };
+            ws.onclose = (event) => {
+                if (conn.timeout) clearTimeout(conn.timeout);
+                delete boltOppConnections[walletName];
+                updateBoltOppConnectionStatus(walletName);
+                if (conn.pendingReject) {
+                    conn.pendingReject(event.code === 4001 ? new Error('Invalid API key') : new Error('Connection closed'));
+                }
+            };
+        }
+
+        function sendOpportunityViaWebSocket(walletName, opportunity) {
+            return new Promise((resolve, reject) => {
+                const wsUrl = getBoltWebSocketUrl(walletName);
+                if (!wsUrl) {
+                    reject(new Error('Configure base URL in Settings'));
+                    return;
+                }
+                let conn = boltOppConnections[walletName];
+                if (conn?.pendingResolve) {
+                    reject(new Error('Request in progress'));
+                    return;
+                }
+                if (!conn || conn.ws.readyState !== WebSocket.OPEN) {
+                    connectBoltOpp(walletName);
+                    conn = boltOppConnections[walletName];
+                    const checkReady = () => {
+                        conn = boltOppConnections[walletName];
+                        if (conn?.ws?.readyState === WebSocket.OPEN) {
+                            doSend();
+                        } else if (!conn || conn.ws?.readyState === WebSocket.CLOSED) {
+                            reject(new Error('Failed to connect'));
+                        } else {
+                            setTimeout(checkReady, 50);
+                        }
+                    };
+                    const doSend = () => {
+                        conn.pendingResolve = resolve;
+                        conn.pendingReject = reject;
+                        conn.timeout = setTimeout(() => {
+                            if (conn.pendingResolve === resolve) {
+                                conn.pendingResolve = null;
+                                conn.pendingReject = null;
+                                disconnectBoltOpp(walletName);
+                                reject(new Error('Request timed out'));
+                            }
+                        }, 10000);
+                        conn.ws.send(JSON.stringify(opportunity));
+                    };
+                    setTimeout(checkReady, 50);
+                    return;
+                }
+                conn.pendingResolve = resolve;
+                conn.pendingReject = reject;
+                conn.timeout = setTimeout(() => {
+                    if (conn.pendingResolve === resolve) {
+                        conn.pendingResolve = null;
+                        conn.pendingReject = null;
+                        reject(new Error('Request timed out'));
+                    }
+                }, 10000);
+                conn.ws.send(JSON.stringify(opportunity));
+            });
+        }
+
+        async function boltDump(walletName, netuid) {
+            if (!getBoltWebSocketUrl(walletName)) { showToast('Error', 'Configure base URL in Settings', 'error'); return; }
+            if (!confirm(`Are you sure you want to dump ALL stake from subnet ${netuid}?`)) return;
+            const blockNumber = (previousData.wallets?.[walletName] ?? Object.values(previousData.wallets || {})[0])?.block_number ?? 0;
+            const opportunity = { block: blockNumber + 1, netuid, amount: 0, is_dump: true, is_urgent: true };
+            try {
+                showLoading();
+                await sendOpportunityViaWebSocket(walletName, opportunity);
+                showToast('Success', `Dumped all stake from subnet ${netuid}`, 'success');
+            } catch (e) {
+                showToast('Error', e.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function boltStake(walletName) {
+            if (!getBoltWebSocketUrl(walletName)) { showToast('Error', 'Configure base URL in Settings', 'error'); return; }
+            const netuid = parseInt(document.getElementById(`${walletName}-stake-netuid`).value);
+            const amount = parseFloat(document.getElementById(`${walletName}-stake-amount`).value);
+            if (isNaN(netuid) || !amount) { showToast('Error', 'Enter netuid and amount', 'error'); return; }
+            const blockNumber = (previousData.wallets?.[walletName] ?? Object.values(previousData.wallets || {})[0])?.block_number ?? 0;
+            const opportunity = { block: blockNumber + 1, netuid, amount, is_dump: false, is_urgent: true };
+            try {
+                showLoading();
+                await sendOpportunityViaWebSocket(walletName, opportunity);
+                showToast('Success', 'Stake submitted', 'success');
+            } catch (e) {
+                showToast('Error', e.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function saveBoltSettings(walletName) {
+            const baseUrl = document.getElementById(`${walletName}-settings-base-url`).value.trim();
+            const xApiKey = document.getElementById(`${walletName}-settings-x-api-key`).value.trim();
+            localStorage.setItem(`ultrade_${walletName}_base_boltrade_url`, baseUrl);
+            localStorage.setItem(`ultrade_${walletName}_x_api_key`, xApiKey);
+            disconnectBoltOpp(walletName);
+            if (baseUrl) connectBoltOpp(walletName);
+            showToast('Success', 'Settings saved', 'success');
+        }
+
+        function calculateDelta(currentStake, previousWalletData, netuid, hotkey) {
+            if (!previousWalletData || !previousWalletData.stakes) return 0;
+            
+            const previousStake = previousWalletData.stakes.find(s => s.netuid === netuid && s.hotkey === hotkey);
+            if (!previousStake) return 0;
+            
+            const current = parseFloat(currentStake.balance_in_tao);
+            const previous = parseFloat(previousStake.balance_in_tao);
+            
+            return current - previous;
+        }
+
+        function switchTab(walletName, tab) {
+            const tabs = ['add', 'remove', 'move', 'change'];
+            tabs.forEach(t => {
+                const form = document.getElementById(`${walletName}-${t}`);
+                const btn = event.target.parentElement.children[tabs.indexOf(t)];
+                if (t === tab) {
+                    form.classList.add('active');
+                    btn.classList.add('active');
+                } else {
+                    form.classList.remove('active');
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        function sendStakeRequest(type, payload) {
+            return new Promise((resolve, reject) => {
+                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    reject(new Error('Not connected'));
+                    return;
+                }
+                const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                stakeRequestPending[requestId] = { resolve, reject };
+                setTimeout(() => {
+                    if (stakeRequestPending[requestId]) {
+                        delete stakeRequestPending[requestId];
+                        reject(new Error('Request timed out'));
+                    }
+                }, 60000);
+                ws.send(JSON.stringify({ type, request_id: requestId, ...payload }));
+            });
+        }
+
+        async function addStake(walletName) {
+            if (!apiKey) {
+                showToast('Error', 'Please set API key first', 'error');
+                return;
+            }
+            const netuid = parseInt(document.getElementById(`${walletName}-add-netuid`).value);
+            const amount = parseFloat(document.getElementById(`${walletName}-add-amount`).value);
+            const tolerance = parseFloat(document.getElementById(`${walletName}-add-tolerance`).value);
+            const fail = document.getElementById(`${walletName}-add-fail`).checked;
+            const without_tolerance = document.getElementById(`${walletName}-add-without-tolerance`).checked;
+            const mev_shield = document.getElementById(`${walletName}-add-mev`)?.checked || false;
+            const allow_partial = document.getElementById(`${walletName}-add-allow-partial`).checked;
+            if (isNaN(netuid) || !amount) {
+                showToast('Error', 'Please fill all required fields', 'error');
+                return;
+            }
+            try {
+                showLoading();
+                const data = await sendStakeRequest('add', {
+                    wallet_name: walletName,
+                    api_key: apiKey,
+                    netuid,
+                    amount,
+                    tolerance,
+                    mev_shield,
+                    allow_partial,
+                    fail,
+                    without_tolerance
+                });
+                showToast('Success', data.message, 'success');
+            } catch (error) {
+                showToast('Error', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function removeStake(walletName) {
+            if (!apiKey) {
+                showToast('Error', 'Please set API key first', 'error');
+                return;
+            }
+            const netuid = parseInt(document.getElementById(`${walletName}-remove-netuid`).value);
+            const hotkey = document.getElementById(`${walletName}-remove-hotkey`).value;
+            const amount = parseFloat(document.getElementById(`${walletName}-remove-amount`).value);
+            const all = document.getElementById(`${walletName}-remove-all`).checked;
+            const mev_shield = document.getElementById(`${walletName}-remove-mev`)?.checked || false;
+            if (isNaN(netuid) || (!amount && !all) || !hotkey) {
+                showToast('Error', 'Please fill all required fields', 'error');
+                return;
+            }
+            try {
+                showLoading();
+                const data = await sendStakeRequest('remove', {
+                    wallet_name: walletName,
+                    api_key: apiKey,
+                    netuid,
+                    amount: amount || 0,
+                    hotkey,
+                    all,
+                    mev_shield
+                });
+                showToast('Success', data.message, 'success');
+            } catch (error) {
+                showToast('Error', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function moveStake(walletName) {
+            if (!apiKey) {
+                showToast('Error', 'Please set API key first', 'error');
+                return;
+            }
+            const origin = parseInt(document.getElementById(`${walletName}-move-origin`).value);
+            const hotkey = document.getElementById(`${walletName}-move-hotkey`).value;
+            const dest = parseInt(document.getElementById(`${walletName}-move-dest`).value);
+            const amount = parseFloat(document.getElementById(`${walletName}-move-amount`).value);
+            const all = document.getElementById(`${walletName}-move-all`).checked;
+            const mev_shield = document.getElementById(`${walletName}-move-mev`)?.checked || false;
+            if (isNaN(origin) || isNaN(dest) || (!amount && !all) || !hotkey) {
+                showToast('Error', 'Please fill all required fields', 'error');
+                return;
+            }
+            try {
+                showLoading();
+                const data = await sendStakeRequest('move', {
+                    wallet_name: walletName,
+                    api_key: apiKey,
+                    origin,
+                    hotkey,
+                    dest,
+                    amount: amount || 0,
+                    all,
+                    mev_shield
+                });
+                showToast('Success', data.message, 'success');
+            } catch (error) {
+                showToast('Error', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function changeHotkey(walletName) {
+            if (!apiKey) {
+                showToast('Error', 'Please set API key first', 'error');
+                return;
+            }
+            const netuid = parseInt(document.getElementById(`${walletName}-change-netuid`).value);
+            const originHotkey = document.getElementById(`${walletName}-change-origin-hotkey`).value;
+            const destHotkey = document.getElementById(`${walletName}-change-dest-hotkey`).value;
+            const amount = parseFloat(document.getElementById(`${walletName}-change-amount`).value);
+            const all = document.getElementById(`${walletName}-change-all`).checked;
+            if (isNaN(netuid) || !originHotkey || !destHotkey || (!amount && !all)) {
+                showToast('Error', 'Please fill all required fields', 'error');
+                return;
+            }
+            try {
+                showLoading();
+                const data = await sendStakeRequest('change', {
+                    wallet_name: walletName,
+                    api_key: apiKey,
+                    netuid,
+                    origin_hotkey: originHotkey,
+                    dest_hotkey: destHotkey,
+                    amount: amount || 0,
+                    all,
+                });
+                showToast('Success', data.message, 'success');
+            } catch (error) {
+                showToast('Error', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function dumpStake(walletName, netuid, hotkey) {
+            if (!apiKey) {
+                showToast('Error', 'Please set API key first', 'error');
+                return;
+            }
+            if (!confirm(`Are you sure you want to dump ALL stake from subnet ${netuid}?`)) return;
+            try {
+                showLoading();
+                await sendStakeRequest('remove', {
+                    wallet_name: walletName,
+                    api_key: apiKey,
+                    netuid,
+                    hotkey,
+                    amount: 0,
+                    all: true,
+                    mev_shield: false
+                });
+                showToast('Success', `Dumped all stake from subnet ${netuid}`, 'success');
+            } catch (error) {
+                showToast('Error', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function copyToClipboard(text) {
+            // Create a temporary textarea element
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            
+            // Append the textarea to the document
+            document.body.appendChild(textarea);
+            
+            // Select the text
+            textarea.select();
+            
+            try {
+                // Execute the copy command
+                document.execCommand('copy');
+                console.log("Text copied to clipboard");
+            } catch (err) {
+                console.error("Failed to copy text: ", err);
+            }
+            
+            // Remove the textarea from the document
+            document.body.removeChild(textarea);
+
+            showToast('Success', 'Hotkey copied to clipboard', 'success');
+        }
+
+        window.addEventListener('beforeunload', (e) => {
+            if (Object.values(pulseRunningWallets).some(v => v === true)) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Initialize
+        connectWebSocket();
+    </script>
+</body>
+</html>

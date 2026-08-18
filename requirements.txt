@@ -1,0 +1,4 @@
+bittensor>=11.0.0
+fastapi
+uvicorn[standard]
+pydantic

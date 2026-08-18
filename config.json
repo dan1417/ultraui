@@ -1,0 +1,12 @@
+{
+    "network": "finney",
+    "wallets": [
+        {
+            "name": "myam",
+            "type": "multisig",
+            "proxy_wallet": "yam",
+            "delegator": "5CSyxKQB7M2YmWdZPBnWWLqBq3ucQXCPuhdQ3aQfjyu37Zr2"
+        }
+    ],
+    "api_key": "5CSyxKQB7M2YmWdZPBnWWLqBq3ucQXCPuhdQ3aQfjyu37Zr2"
+}
